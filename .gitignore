@@ -1,0 +1,16 @@
+*.o
+*.o.*
+*.so
+*.so.*
+.vscode
+.history
+.idea
+*.a
+*
+*/
+release/*
+deps/boost/stage
+deps/boost/doc
+deps/boost/bin.v2
+cmake-build-debug/
+deps/boost/project-config.jam.*

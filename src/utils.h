@@ -19,10 +19,10 @@ inline bool unzip_data(const char *zip_data, unsigned long zip_len,
   return true;
 }
 
-float _cal_price1000(int base_p, int diff) {
+inline float _cal_price1000(int base_p, int diff) {
   return (float)(base_p + diff) / 1000;
 }
-std::tuple<int, int, int, int, int, int16_t> get_datetime(int category,
+inline std::tuple<int, int, int, int, int, int16_t> get_datetime(int category,
                                                           const char *data,
                                                           int pos) {
   int year = 0;
@@ -54,7 +54,7 @@ std::tuple<int, int, int, int, int, int16_t> get_datetime(int category,
   return std::make_tuple(year, month, day, hour, minute, pos);
 }
 
-std::tuple<int, int> get_price(const char *data, int pos) {
+inline std::tuple<int, int> get_price(const char *data, int pos) {
   int pos_byte = 6;
   int bdata = (int)(unsigned char)data[pos];
   int intdata = bdata & 0x3f;
@@ -88,7 +88,7 @@ std::tuple<int, int> get_price(const char *data, int pos) {
   return std::make_tuple(intdata, pos);
 }
 
-double get_volume(int ivol) {
+inline double get_volume(int ivol) {
   int logpoint = ivol >> (8 * 3);
   int hheax = ivol >> (8 * 3);           // [3]
   int hleax = (ivol >> (8 * 2)) & 0xff;  // [2]
@@ -141,7 +141,7 @@ double get_volume(int ivol) {
   return dbl_ret;
 }
 
-std::vector<uint8_t> hexStringToByteArray(const std::string &hexString) {
+inline std::vector<uint8_t> hexStringToByteArray(const std::string &hexString) {
   std::vector<uint8_t> byteArray;
 
   // Loop through the hex string, two characters at a time
@@ -159,7 +159,7 @@ std::vector<uint8_t> hexStringToByteArray(const std::string &hexString) {
   return byteArray;
 }
 
-std::vector<Kline> parse_kline(const char *data, int len,
+inline std::vector<Kline> parse_kline(const char *data, int len,
                                unsigned short category) {
   if (len <= 0) {
     return {};
@@ -217,5 +217,22 @@ std::vector<Kline> parse_kline(const char *data, int len,
 
   return klines;
 }
+
+inline std::vector<uint8_t> setup_cmd1(){
+    const std::string cmd1 = "0c0218930001030003000d0001";
+    return hexStringToByteArray(cmd1);
+}
+inline std::vector<uint8_t> setup_cmd2(){
+    const std::string cmd2 = "0c0218940001030003000d0002";
+    return hexStringToByteArray(cmd2);
+}
+
+inline std::vector<uint8_t> setup_cmd3(){
+  const std::string cmd3 =
+      "0c031899000120002000db0fd5d0c9ccd6a4a8af0000008fc22540130000d500c9ccbdf0"
+      "d7ea00000002";
+    return hexStringToByteArray(cmd3);
+}
+
 
 }  // namespace cpptdx

@@ -137,24 +137,6 @@ class TdxRequestMaker {
 };
 
 
-
-std::vector<uint8_t> setup_cmd1(){
-    const std::string cmd1 = "0c0218930001030003000d0001";
-    return hexStringToByteArray(cmd1);
-}
-std::vector<uint8_t> setup_cmd2(){
-    const std::string cmd2 = "0c0218940001030003000d0002";
-    return hexStringToByteArray(cmd2);
-}
-
-std::vector<uint8_t> setup_cmd3(){
-  const std::string cmd3 =
-      "0c031899000120002000db0fd5d0c9ccd6a4a8af0000008fc22540130000d500c9ccbdf0"
-      "d7ea00000002";
-    return hexStringToByteArray(cmd3);
-}
-
-
 class tdx_blocking_client {
   boost::asio::io_service io_service_;
   tcp::socket socket_;
@@ -166,10 +148,18 @@ class tdx_blocking_client {
     tcp::resolver::query query(tcp::v4(), host, port);
     tcp::resolver::iterator iterator = resolver.resolve(query);
     socket_.connect(*iterator);
+
+    //registry
+    send(setup_cmd1());
+    send(setup_cmd2());
+    send(setup_cmd3());
   }
-  void req_security_klines() {
+
+  void req_security_klines(Category cat, Market market,
+                            const std::string &code, unsigned short start,
+                            unsigned short count) {
     TdxRequestMaker req_maker;
-    auto request = req_maker.make_get_bars_request(9, 0, "000001", 0, 10);
+    auto request = req_maker.make_get_bars_request((unsigned short)cat, (unsigned short)market, code, start, count);
     std::vector<char> rev_data= send(request.data(), request.length());
     auto klines = parse_kline(rev_data.data(), rev_data.size(), 9);
     for (auto kline : klines) {
@@ -228,12 +218,9 @@ int main(int argc, char *argv[]) {
     const char *port = "7709";
 
     tdx_blocking_client client(host, port);
-    //registry
-    client.send(setup_cmd1());
-    client.send(setup_cmd2());
-    client.send(setup_cmd3());
+
     //req klines
-    client.req_security_klines();
+    client.req_security_klines(Category::kDay,Market::kSH,"600446",0,20);
 
   } catch (std::exception &e) {
     std::cerr << "Exception: " << e.what() << "\n";

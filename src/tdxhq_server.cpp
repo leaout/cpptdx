@@ -7,8 +7,6 @@ using namespace cpptdx;
 int main(int argc, char* argv[]) {
     Application app(argv[0]);
     do {
-        const char* host = "119.147.212.81";
-        const char* port = "7709";
         // Log init
         string log_path = app.current_path() + "/log/" + app.get_app_name();
         lolog::init_logging(log_path.c_str(), 5, 200 << 20);

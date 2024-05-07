@@ -4,15 +4,20 @@ set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_C_COMPILER "g++")
 find_package(ZLIB REQUIRED)
 include_directories(${ZLIB_INCLUDE_DIRS})
+include_directories(${CMAKE_SOURCE_DIR})
+include_directories(${CMAKE_SOURCE_DIR}/deps/)
+include_directories(${CMAKE_SOURCE_DIR}/src/)
 
 find_package(Boost REQUIRED COMPONENTS system filesystem thread)
 IF(Boost_FOUND)
   INCLUDE_DIRECTORIES(${Boost_INCLUDE_DIRS})
   LINK_DIRECTORIES(${Boost_LIBRARY_DIRS})
 ENDIF(Boost_FOUND)
-
 include_directories(${ASIO_INCLUDE_DIRS})
 
+find_package(yaml-cpp REQUIRED)
+include_directories(${YAML_CPP_INCLUDE_DIR})
 
-add_executable(tdx_client ./src/tdx_client.cpp)
-target_link_libraries(tdx_client -lpthread  Boost::system Boost::thread ${ZLIB_LIBRARIES})
+aux_source_directory(${CMAKE_SOURCE_DIR}/src SRC_LIST)
+add_executable(tdxhq_server ${SRC_LIST})
+target_link_libraries(tdxhq_server -lpthread  Boost::system Boost::thread ${ZLIB_LIBRARIES} -lyaml-cpp)

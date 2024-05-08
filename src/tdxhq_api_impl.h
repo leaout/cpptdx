@@ -14,7 +14,7 @@
 #include <string>
 #include <tuple>
 #include <vector>
-#include "include/tdx_hq_api.h"
+#include "include/tdxhq_api.h"
 
 using boost::asio::ip::tcp;
 
@@ -32,6 +32,8 @@ public:
     bool connect(const string& host, const string& port) override;
     vector<Kline> get_security_klines(Category cat, Market market, const std::string& code, unsigned short start, unsigned short count) override;
     size_t get_security_count(Market market) override;
+    vector<SnapShot> get_security_snapshots(const vector<pair<string, Market>>& stock_list) override;
+    vector<SecurityInfo> get_security_list(Market market, unsigned short start) override;
 
 private:
     void stop(){

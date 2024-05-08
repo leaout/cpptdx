@@ -33,4 +33,5 @@ inline std::vector<uint8_t> get_stock_count_cmd(unsigned short market) {
     vec1.insert(vec1.end(), vec2.begin(), vec2.end());
     return vec1;
 }
+
 }  // namespace cpptdx

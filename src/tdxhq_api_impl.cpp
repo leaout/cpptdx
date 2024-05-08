@@ -1,5 +1,7 @@
-#include "tdx_hq_api_impl.h"
+#include "tdxhq_api_impl.h"
 #include "msg/get_security_klines.h"
+#include "msg/get_security_snapshot.h"
+#include "msg/get_security_list.h"
 #include "utils.h"
 
 namespace cpptdx {
@@ -44,6 +46,19 @@ size_t TdxHqApiImpl::get_security_count(Market market) {
     auto receive_data = send(cmd);
     unsigned short stock_count = *(unsigned short*)receive_data.data();
     return stock_count;
+}
+
+vector<SnapShot> TdxHqApiImpl::get_security_snapshots(const vector<pair<string, Market>>& stock_list){
+    vector<SnapShot> ret;
+    auto cmd = make_get_snap_request(stock_list);
+    auto receive_data = send(cmd.data(), cmd.length());
+    return parse_snapshot(receive_data.data(),receive_data.size());
+}
+vector<SecurityInfo> TdxHqApiImpl::get_security_list(Market market, unsigned short start){
+    vector<SecurityInfo> ret;
+    auto cmd = make_get_security_list_request((unsigned short)market, start);
+    auto receive_data = send(cmd.data(), cmd.length());
+    return parse_security_list(receive_data.data(),receive_data.size());
 }
 
 std::vector<char> TdxHqApiImpl::send(const char* send_data, size_t send_len) {

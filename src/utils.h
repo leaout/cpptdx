@@ -1,10 +1,12 @@
 #pragma once
+#include <iconv.h>
 #include <zlib.h>
 
 #include <cmath>
 #include <cstring>
 #include <tuple>
 #include <vector>
+
 #include "tdx_base.h"
 
 namespace cpptdx {
@@ -19,6 +21,7 @@ inline bool unzip_data(const char *zip_data, unsigned long zip_len, unsigned lon
 }
 
 inline float _cal_price1000(int base_p, int diff) { return (float)(base_p + diff) / 1000; }
+inline float _cal_price100(int base_p, int diff) { return (float)(base_p + diff) / 100; }
 inline std::tuple<int, int, int, int, int, int16_t> get_datetime(int category, const char *data, int pos) {
     int year = 0;
     int month = 0;
@@ -152,6 +155,57 @@ inline std::vector<uint8_t> hexStringToByteArray(const std::string &hexString) {
     }
 
     return byteArray;
+}
+
+// utf8 gbk
+inline int code_convert(const char *from_charset, const char *to_charset, char *inbuf, size_t inlen, char *outbuf, size_t outlen) {
+    iconv_t cd;
+    char **pin = &inbuf;
+    char **pout = &outbuf;
+
+    cd = iconv_open(to_charset, from_charset);
+    if (cd == 0) return -1;
+
+    memset(outbuf, 0, outlen);
+
+    if ((int)iconv(cd, pin, &inlen, pout, &outlen) == -1) {
+        iconv_close(cd);
+        return -1;
+    }
+    iconv_close(cd);
+    **pout = '\0';
+    return 0;
+}
+inline std::string GBKToUTF8(const std::string &str_gbk) {
+    int length = str_gbk.size() * 2 + 1;
+
+    char *temp = (char *)malloc(sizeof(char) * length);
+
+    if (code_convert("gbk", "utf-8", (char *)str_gbk.c_str(), str_gbk.size(), temp, length) >= 0) {
+        std::string str_result;
+        str_result.append(temp);
+        free(temp);
+        return str_result;
+    } else {
+        free(temp);
+        return "";
+    }
+}
+inline std::string UTFtoGBK(const std::string &str_utf8) {
+    int length = str_utf8.length();
+
+    char *temp = (char *)malloc(sizeof(char) * length);
+
+    if (code_convert("utf-8", "gbk", (char *)str_utf8.c_str(), length, temp, length) >= 0) {
+        std::string str_result;
+        str_result.append(temp);
+        free(temp);
+
+        return str_result;
+    } else {
+        free(temp);
+        return "";
+    }
 }
 
 }  // namespace cpptdx

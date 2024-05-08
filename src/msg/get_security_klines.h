@@ -7,7 +7,7 @@
 #include <string>
 #include <cstring>
 #include <vector>
-#include "include/tdx_hq_api.h"
+#include "include/tdxhq_api.h"
 
 namespace cpptdx{
     using namespace std;

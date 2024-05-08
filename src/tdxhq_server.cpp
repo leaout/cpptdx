@@ -2,6 +2,8 @@
 #include "lolog/Lolog-Inl.h"
 #include "config.h"
 #include "app.h"
+#include "include/tdxhq_api.h"
+
 using namespace cpptdx;
 
 int main(int argc, char* argv[]) {
@@ -21,6 +23,10 @@ int main(int argc, char* argv[]) {
         string config_path = app.current_path() + "/config/" + "application.yml";
         if (!config->load_config(config_path)){
             break;
+        }
+        auto tdx_api = create_tdx_hq_api();
+        if(tdx_api->connect(config->tdx_host,config->tdx_port)){
+            //TODO
         }
 
     } while(false);

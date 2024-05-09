@@ -98,12 +98,53 @@ struct SnapShot {
     double active2;
 };
 
-struct SecurityInfo{
+struct SecurityInfo {
     string code;
     unsigned short volunit = 0;
     string name;
     char decimal_point = 0;
     double pre_close = 0;
+};
+
+
+struct FinanceInfo {
+    string code;
+    Market market;
+    float liutongguben;
+    unsigned short province;
+    unsigned short industry;
+    unsigned int updated_date;
+    unsigned int ipo_date;
+    float zongguben;
+    float guojiagu;
+    float faqirenfarengu;
+    float farengu;
+    float bgu;
+    float hgu;
+    float zhigonggu;
+    float zongzichan;
+    float liudongzichan;
+    float gudingzichan;
+    float wuxingzichan;
+    float gudongrenshu;
+    float liudongfuzhai;
+    float changqifuzhai;
+    float zibengongjijin;
+    float jingzichan;
+    float zhuyingshouru;
+    float zhuyinglirun;
+    float yingshouzhangkuan;
+    float yingyelirun;
+    float touzishouyu;
+    float jingyingxianjinliu;
+    float zongxianjinliu;
+    float cunhuo;
+    float lirunzonghe;
+    float shuihoulirun;
+    float jinglirun;
+    float weifenlirun;
+    float baoliu1;
+    float baoliu2;
 };
 
 class TdxHqApi {
@@ -114,6 +155,7 @@ public:
     virtual vector<Kline> get_security_klines(Category cat, Market market, const std::string& code, unsigned short start, unsigned short count) = 0;
     virtual vector<SnapShot> get_security_snapshots(const vector<pair<string, Market>>& stock_list) = 0;
     virtual vector<SecurityInfo> get_security_list(Market market, unsigned short start) = 0;
+    virtual FinanceInfo get_finance_info(Market market, const string& code) = 0;
     virtual size_t get_security_count(Market market) = 0;
 };
 shared_ptr<TdxHqApi> create_tdx_hq_api();

@@ -27,6 +27,8 @@ int main(int argc, char* argv[]) {
         auto tdx_api = create_tdx_hq_api();
         if(tdx_api->connect(config->tdx_host,config->tdx_port)){
             //TODO
+            auto f = tdx_api->get_finance_info(Market::kSZ,"000001");
+            int a = 0;
         }
 
     } while(false);

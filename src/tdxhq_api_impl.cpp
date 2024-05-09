@@ -2,6 +2,7 @@
 #include "msg/get_security_klines.h"
 #include "msg/get_security_snapshot.h"
 #include "msg/get_security_list.h"
+#include "msg/get_finance_info.h"
 #include "utils.h"
 
 namespace cpptdx {
@@ -51,26 +52,41 @@ size_t TdxHqApiImpl::get_security_count(Market market) {
 vector<SnapShot> TdxHqApiImpl::get_security_snapshots(const vector<pair<string, Market>>& stock_list){
     vector<SnapShot> ret;
     auto cmd = make_get_snap_request(stock_list);
-    auto receive_data = send(cmd.data(), cmd.length());
+    auto receive_data = send(cmd.data(), cmd.size());
     return parse_snapshot(receive_data.data(),receive_data.size());
 }
 vector<SecurityInfo> TdxHqApiImpl::get_security_list(Market market, unsigned short start){
     vector<SecurityInfo> ret;
     auto cmd = make_get_security_list_request((unsigned short)market, start);
-    auto receive_data = send(cmd.data(), cmd.length());
+    auto receive_data = send(cmd.data(), cmd.size());
     return parse_security_list(receive_data.data(),receive_data.size());
 }
 
+FinanceInfo TdxHqApiImpl::get_finance_info(Market market, const string& code){
+    auto cmd = make_get_finance_info_request((unsigned short)market, code);
+    auto receive_data = send(cmd.data(), cmd.size());
+    return parse_finance_info(receive_data.data(),receive_data.size());
+}
+
 std::vector<char> TdxHqApiImpl::send(const char* send_data, size_t send_len) {
+    std::lock_guard<std::mutex> lock(mutex_);
+    boost::system::error_code ec;
     std::vector<char> recived_data;
-    auto tmp_send_len = boost::asio::write(*socket_, boost::asio::buffer(send_data, send_len));
+    auto tmp_send_len = boost::asio::write(*socket_, boost::asio::buffer(send_data, send_len),ec);
     if (tmp_send_len != send_len) {
+        return {};
+    }
+    if (ec) {
+        std::cerr << "boost::asio::write failed: " << ec.message() << std::endl;
         return {};
     }
 
     resp_header resp_header;
-    boost::system::error_code ec;
     size_t n = boost::asio::read(*socket_, boost::asio::buffer((char*)&resp_header, kHeaderLen), ec);
+    if (ec) {
+        std::cerr << "boost::asio::read failed: " << ec.message() << std::endl;
+        return {};
+    }
     if (n != kHeaderLen) {
         return {};
     }

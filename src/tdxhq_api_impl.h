@@ -14,6 +14,7 @@
 #include <string>
 #include <tuple>
 #include <vector>
+#include <mutex>
 #include "include/tdxhq_api.h"
 
 using boost::asio::ip::tcp;
@@ -25,7 +26,7 @@ class TdxHqApiImpl : public TdxHqApi {
     shared_ptr<tcp::socket> socket_;
     std::atomic_bool is_running_;
     std::thread th_;
-
+    std::mutex mutex_;
 public:
     TdxHqApiImpl(){}
     ~TdxHqApiImpl();
@@ -34,7 +35,7 @@ public:
     size_t get_security_count(Market market) override;
     vector<SnapShot> get_security_snapshots(const vector<pair<string, Market>>& stock_list) override;
     vector<SecurityInfo> get_security_list(Market market, unsigned short start) override;
-
+    FinanceInfo get_finance_info(Market market, const string& code) override;
 private:
     void stop(){
         is_running_ = false;

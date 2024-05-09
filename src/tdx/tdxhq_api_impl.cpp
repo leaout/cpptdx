@@ -3,6 +3,7 @@
 #include "msg/get_security_snapshot.h"
 #include "msg/get_security_list.h"
 #include "msg/get_finance_info.h"
+#include "tdx_base.h"
 #include "utils.h"
 
 namespace cpptdx {

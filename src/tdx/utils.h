@@ -7,8 +7,6 @@
 #include <tuple>
 #include <vector>
 
-#include "tdx_base.h"
-
 namespace cpptdx {
 
 inline bool unzip_data(const char *zip_data, unsigned long zip_len, unsigned long unzip_len, std::vector<char> &unzip_data) {

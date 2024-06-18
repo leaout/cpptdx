@@ -1,0 +1,14 @@
+server:
+  # server port
+  port: 8022
+
+tdx:
+  hosts:
+  - host: 119.147.212.81
+    port: 7709
+  - host: 119.147.212.81
+    port: 7709
+  - host: 119.147.212.81
+    port: 7709
+  - host: 119.147.212.81
+    port: 7709

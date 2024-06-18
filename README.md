@@ -1,9 +1,9 @@
 ## dependencies
 ```
-apt install libyaml-cpp-dev
+apt install -y libyaml-cpp-dev
 ```
 ```
-apt install libyaml-cpp-dev
+apt install -y libboost-all-dev libasio-dev
 ```
 
 ```

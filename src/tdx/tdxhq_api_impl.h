@@ -40,9 +40,10 @@ public:
 private:
     void stop(){
         is_running_ = false;
+        join();
         if(socket_)
             socket_->close();
-        join();
+        
     }
     void join() {
         if (th_.joinable()) {

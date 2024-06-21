@@ -3,6 +3,10 @@
 #include "config.h"
 #include "app.h"
 #include "include/tdxhq_api.h"
+#include <butil/logging.h>
+#include <brpc/server.h>
+#include <brpc/restful.h>
+#include <json2pb/pb_to_json.h>
 
 using namespace cpptdx;
 

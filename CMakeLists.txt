@@ -7,6 +7,8 @@ include_directories(${ZLIB_INCLUDE_DIRS})
 include_directories(${CMAKE_SOURCE_DIR})
 include_directories(${CMAKE_SOURCE_DIR}/deps/)
 include_directories(${CMAKE_SOURCE_DIR}/src/)
+include_directories(/usr/local/include/brpc/include)
+
 
 find_package(Boost REQUIRED COMPONENTS system filesystem thread)
 IF(Boost_FOUND)
@@ -19,6 +21,7 @@ find_package(yaml-cpp REQUIRED)
 include_directories(${YAML_CPP_INCLUDE_DIR})
 
 link_directories(${CMAKE_BINARY_DIR})
+link_directories(/usr/local/lib/brpc/lib/)
 
 aux_source_directory(${CMAKE_SOURCE_DIR}/src SRC_LIST)
 aux_source_directory(${CMAKE_SOURCE_DIR}/src/tdx SRC_TDX_LIST)

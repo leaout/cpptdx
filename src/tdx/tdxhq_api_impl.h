@@ -15,6 +15,7 @@
 #include <tuple>
 #include <vector>
 #include <mutex>
+#include <thread>
 #include "include/tdxhq_api.h"
 
 using boost::asio::ip::tcp;

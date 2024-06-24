@@ -6,6 +6,7 @@
 #include <memory>
 #include <string>
 #include <vector>
+#include "json/json.hpp"
 
 namespace cpptdx {
 using namespace std;
@@ -19,6 +20,7 @@ struct Kline {
     long long amount = 0;
     long long datetime = 0;
 };
+NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE(Kline, open, close,high,low,vol,amount,datetime);
 
 // 0 -   5 分钟K 线
 // 1 -   15 分钟K 线

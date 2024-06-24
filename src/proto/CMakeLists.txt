@@ -1,0 +1,10 @@
+find_package(Protobuf REQUIRED)
+
+set(PROTO_FILES rpc_server.proto)
+
+PROTOBUF_GENERATE_CPP(PROTO_SRC PROTO_HEADER ${PROTO_FILES})
+ADD_LIBRARY(rpc-proto ${PROTO_SRC})
+
+set(ALL_OBJECT_FILES
+        ${ALL_OBJECT_FILES} $<TARGET_OBJECTS:rpc-proto>
+        PARENT_SCOPE)

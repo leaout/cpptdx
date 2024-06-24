@@ -5,13 +5,11 @@
 #pragma once
 
 #include <string>
-
-#include "lolog/Lolog-Inl.h"
 #include "yaml-cpp/yaml.h"
 
 namespace cpptdx {
 using namespace std;
-using namespace lolog;
+// using namespace lolog;
 class Config {
     Config(){};
 
@@ -33,7 +31,7 @@ public:
         try {
             config = YAML::LoadFile(config_file);
         } catch (YAML::BadFile &e) {
-            LOERROR() << "yaml config read error :" << e.msg;
+            // LOERROR() << "yaml config read error :" << e.msg;
             return false;
         }
         try {
@@ -48,7 +46,7 @@ public:
             }
 
         } catch (YAML::TypedBadConversion<string> &e) {
-            LOERROR() << "yaml config read error :" << e.msg;
+            // LOERROR() << "yaml config read error :" << e.msg;
             return false;
         }
         return true;

@@ -1,0 +1,46 @@
+syntax="proto2";
+package rpc_server;
+
+option cc_generic_services = true;
+
+enum CategoryType{
+    k5Minute = 0;
+    k15Minute = 1;
+    k30Minute = 2;
+    k1Hour = 3;
+    kDay = 4;
+    kWeek = 5;
+    kMonth = 6;
+    k1Minute = 7;
+    k1MinuteK = 8;
+    kDayK = 9;
+    kQuarterK = 10;
+    kYearK = 11;
+}
+enum MarketType{
+    kSZ = 0;
+    kSH = 1; 
+}
+message Kline{
+    required double open = 1;
+    required double close = 2;
+    required double high = 3;
+    required double low = 4;
+    required uint64 vol = 5;
+    required uint64 amount = 6;
+    required uint64 datetime = 7;
+};
+message HttpRequest {
+};
+message HttpResponse {
+};
+
+
+service HttpService {
+  rpc GetSecuritySnapshots(HttpRequest) returns (HttpResponse);
+  rpc GetSecurityList(HttpRequest) returns (HttpResponse);
+  rpc GetSecurityKlines(HttpRequest) returns (HttpResponse);
+};
+
+
+

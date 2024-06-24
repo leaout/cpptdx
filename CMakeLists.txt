@@ -21,13 +21,20 @@ find_package(yaml-cpp REQUIRED)
 include_directories(${YAML_CPP_INCLUDE_DIR})
 
 link_directories(${CMAKE_BINARY_DIR})
-link_directories(/usr/local/lib/brpc/lib/)
+link_directories(/usr/local/lib/brpc/)
+
+include_directories(${CMAKE_CURRENT_BINARY_DIR}/src/proto)
+link_directories(${CMAKE_CURRENT_BINARY_DIR}/src/proto)
+
+aux_source_directory(${CMAKE_SOURCE_DIR}/src/proto/ PROTO_LIST)
+
+add_subdirectory(${CMAKE_SOURCE_DIR}/src/proto)
 
 aux_source_directory(${CMAKE_SOURCE_DIR}/src SRC_LIST)
 aux_source_directory(${CMAKE_SOURCE_DIR}/src/tdx SRC_TDX_LIST)
 add_library(tdx_api SHARED ${SRC_TDX_LIST})
 target_link_libraries(tdx_api -lpthread  Boost::system Boost::thread ${ZLIB_LIBRARIES})
 
-add_executable(tdxhq_server ${SRC_LIST})
+add_executable(tdxhq_server ${SRC_LIST} ${PROTO_LIST})
 add_dependencies(tdxhq_server tdx_api)
-target_link_libraries(tdxhq_server -lpthread  Boost::system Boost::thread ${ZLIB_LIBRARIES} -lyaml-cpp -ltdx_api)
+target_link_libraries(tdxhq_server -lpthread  Boost::system Boost::thread ${ZLIB_LIBRARIES} -lyaml-cpp -ltdx_api -lbrpc -lprotobuf -lrpc-proto)

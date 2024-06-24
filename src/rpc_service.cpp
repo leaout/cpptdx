@@ -89,15 +89,15 @@ void HttpServiceImpl::GetSecurityKlines(google::protobuf::RpcController* cntl_ba
     for (brpc::URI::QueryIterator it = cntl->http_request().uri().QueryBegin(); it != cntl->http_request().uri().QueryEnd(); ++it) {
         // os << ' ' << it->first << '=' << it->second;
         if(it->first == "cat"){
-            cat = atoi(it->first.c_str());
+            cat = atoi(it->second.c_str());
         }else if(it->first == "market"){
-            market = atoi(it->first.c_str());
+            market = atoi(it->second.c_str());
         }else if(it->first == "code"){
-            code = it->first;
+            code = it->second;
         }else if(it->first == "start"){
-            start = atoi(it->first.c_str());
+            start = atoi(it->second.c_str());
         }else if(it->first == "count"){
-            count = atoi(it->first.c_str());
+            count = atoi(it->second.c_str());
         }
     }
     auto res_klines = tdx_hq_api_->get_security_klines((Category)cat,(Market)market, code, start, count);

@@ -43,41 +43,74 @@ void HttpServiceImpl::GetSecuritySnapshots(google::protobuf::RpcController* cntl
     brpc::ClosureGuard done_guard(done);
 
     brpc::Controller* cntl = static_cast<brpc::Controller*>(cntl_base);
-
-    // Fill response.
-    cntl->http_response().set_content_type("text/plain");
-    butil::IOBufBuilder os;
-    os << "queries:";
-    for (brpc::URI::QueryIterator it = cntl->http_request().uri().QueryBegin(); it != cntl->http_request().uri().QueryEnd(); ++it) {
-        os << ' ' << it->first << '=' << it->second;
+    vector<pair<string, Market>> stock_list;
+    
+    auto array = nlohmann::json::parse(cntl->request_attachment().to_string());
+    if(array.is_array()){
+        for(const auto& item : array.items()){
+            string code_str = item.value()["code"];
+            string market_str = item.value()["market"];
+            Market market = (Market)atoi(market_str.c_str());
+            stock_list.emplace_back(std::make_pair(code_str,market));
+        }
     }
-    os << "\nbody: " << cntl->request_attachment() << '\n';
+    auto snapshots = tdx_hq_api_->get_security_snapshots(stock_list);
+
+    cntl->http_response().set_content_type("text/plain");
+    nlohmann::json ret_array = nlohmann::json::array();
+    try{
+        for(const auto& snap : snapshots){
+            nlohmann::json j;
+            to_json(j, snap);
+            ret_array.emplace_back(j);
+        }
+    } catch (nlohmann::json::type_error& e) {
+
+    };
+
+    butil::IOBufBuilder os;
+    os << ret_array.dump();
     os.move_to(cntl->response_attachment());
 }
 
 void HttpServiceImpl::GetSecurityList(google::protobuf::RpcController* cntl_base, const rpc_server::HttpRequest* req, 
                                         rpc_server::HttpResponse* res, google::protobuf::Closure* done) {
-    // This object helps you to call done->Run() in RAII style. If you need
-    // to process the request asynchronously, pass done_guard.release().
+
     brpc::ClosureGuard done_guard(done);
 
     brpc::Controller* cntl = static_cast<brpc::Controller*>(cntl_base);
-
+    Market market = Market::kSH;
+    int start = 0;
+    for (brpc::URI::QueryIterator it = cntl->http_request().uri().QueryBegin(); it != cntl->http_request().uri().QueryEnd(); ++it) {
+        if(it->first == "market"){
+            market = (Market)atoi(it->second.c_str());
+        }else if(it->first == "start"){
+            start = atoi(it->second.c_str());
+        }
+    }
+    auto security_infos = tdx_hq_api_->get_security_list(market,start);
     // Fill response.
     cntl->http_response().set_content_type("text/plain");
+    
+    nlohmann::json array = nlohmann::json::array();
+    try{
+
+        for(const auto& info : security_infos){
+            nlohmann::json j;
+            to_json(j, info);
+            array.emplace_back(j);
+        }
+    } catch (nlohmann::json::type_error& e) {
+
+    };
     butil::IOBufBuilder os;
-    os << "queries:";
-    for (brpc::URI::QueryIterator it = cntl->http_request().uri().QueryBegin(); it != cntl->http_request().uri().QueryEnd(); ++it) {
-        os << ' ' << it->first << '=' << it->second;
-    }
-    os << "\nbody: " << cntl->request_attachment() << '\n';
+    os << array.dump();
     os.move_to(cntl->response_attachment());
 }
 
 void HttpServiceImpl::GetSecurityKlines(google::protobuf::RpcController* cntl_base, const rpc_server::HttpRequest* req, 
                                         rpc_server::HttpResponse* res, google::protobuf::Closure* done) {
-    // This object helps you to call done->Run() in RAII style. If you need
-    // to process the request asynchronously, pass done_guard.release().
+
     brpc::ClosureGuard done_guard(done);
 
     brpc::Controller* cntl = static_cast<brpc::Controller*>(cntl_base);
@@ -87,7 +120,7 @@ void HttpServiceImpl::GetSecurityKlines(google::protobuf::RpcController* cntl_ba
     int start = 0;
     int count = 0;
     for (brpc::URI::QueryIterator it = cntl->http_request().uri().QueryBegin(); it != cntl->http_request().uri().QueryEnd(); ++it) {
-        // os << ' ' << it->first << '=' << it->second;
+
         if(it->first == "cat"){
             cat = atoi(it->second.c_str());
         }else if(it->first == "market"){
@@ -103,7 +136,7 @@ void HttpServiceImpl::GetSecurityKlines(google::protobuf::RpcController* cntl_ba
     auto res_klines = tdx_hq_api_->get_security_klines((Category)cat,(Market)market, code, start, count);
     // Fill response.
     cntl->http_response().set_content_type("text/plain");
-    butil::IOBufBuilder os;
+
     nlohmann::json array = nlohmann::json::array();
     try{
 
@@ -115,7 +148,7 @@ void HttpServiceImpl::GetSecurityKlines(google::protobuf::RpcController* cntl_ba
     } catch (nlohmann::json::type_error& e) {
 
     };
-
+    butil::IOBufBuilder os;
     os << array.dump();
     os.move_to(cntl->response_attachment());
 }

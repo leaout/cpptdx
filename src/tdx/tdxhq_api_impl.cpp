@@ -46,7 +46,9 @@ vector<Kline> TdxHqApiImpl::get_security_klines(Category cat, Market market,
 size_t TdxHqApiImpl::get_security_count(Market market) {
     auto cmd = get_stock_count_cmd((unsigned short)market);
     auto receive_data = send(cmd);
-    unsigned short stock_count = *(unsigned short*)receive_data.data();
+    unsigned short stock_count = 0;
+    if(receive_data.size() > 1)
+        stock_count = *(unsigned short*)receive_data.data();
     return stock_count;
 }
 
@@ -71,6 +73,7 @@ FinanceInfo TdxHqApiImpl::get_finance_info(Market market, const string& code){
 
 std::vector<char> TdxHqApiImpl::send(const char* send_data, size_t send_len) {
     std::lock_guard<std::mutex> lock(mutex_);
+    last_send_time_ = std::chrono::high_resolution_clock::now();
     boost::system::error_code ec;
     std::vector<char> recived_data;
     auto tmp_send_len = boost::asio::write(*socket_, boost::asio::buffer(send_data, send_len),ec);

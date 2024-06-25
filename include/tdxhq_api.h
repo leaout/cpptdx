@@ -99,6 +99,7 @@ struct SnapShot {
     double reversed_bytes9;
     double active2;
 };
+NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE(SnapShot,market,code,active1,price,last_close,open,high,low,datetime,reversed_bytes0,reversed_bytes1,vol,cur_vol,amount,s_vol,b_vol,reversed_bytes2,reversed_bytes3,bid1,ask1,bid_vol1,ask_vol1,bid2,ask2,bid_vol2,ask_vol2,bid3,ask3,bid_vol3,ask_vol3,bid4,ask4,bid_vol4,ask_vol4,bid5,ask5,bid_vol5,ask_vol5,reversed_bytes4,reversed_bytes5,reversed_bytes6,reversed_bytes7,reversed_bytes8,reversed_bytes9,active2);
 
 struct SecurityInfo {
     string code;
@@ -107,7 +108,7 @@ struct SecurityInfo {
     char decimal_point = 0;
     double pre_close = 0;
 };
-
+NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE(SecurityInfo, code, volunit,name,decimal_point,pre_close);
 
 struct FinanceInfo {
     string code;

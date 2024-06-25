@@ -28,6 +28,7 @@ class TdxHqApiImpl : public TdxHqApi {
     std::atomic_bool is_running_;
     std::thread th_;
     std::mutex mutex_;
+    std::chrono::high_resolution_clock::time_point last_send_time_;
 public:
     TdxHqApiImpl(){}
     ~TdxHqApiImpl();
@@ -52,8 +53,11 @@ private:
     }
     void heart_beat_thread() {
         while (is_running_) {
-            get_security_count(Market::kSH);
-            std::this_thread::sleep_for(std::chrono::seconds(10));
+            auto elapsed = std::chrono::high_resolution_clock::now() - last_send_time_;
+            if(std::chrono::duration_cast<std::chrono::seconds>(elapsed).count() >= 10)
+                get_security_count(Market::kSH);
+            else
+                std::this_thread::sleep_for(std::chrono::milliseconds(500));
         }
     }
     std::vector<char> send(const std::vector<uint8_t>& send_data) { 

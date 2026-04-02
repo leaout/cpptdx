@@ -1,0 +1,66 @@
+name: Build and Test
+
+on:
+  push:
+    branches: [master]
+  pull_request:
+    branches: [master]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Install dependencies
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y libyaml-cpp-dev libboost-all-dev libasio-dev zlib1g-dev
+
+    - name: Create build directory
+      run: mkdir -p _build
+
+    - name: Configure
+      run: cd _build && cmake ..
+
+    - name: Build
+      run: cd _build && make -j$(nproc)
+
+    - name: Run tests
+      run: cd _build && ./tests/run_tests
+
+    - name: Upload artifacts
+      uses: actions/upload-artifact@v4
+      with:
+        name: release-files
+        path: |
+          _build/tdxhq_server
+          _build/libtdx_api.so
+        retention-days: 7
+
+  release:
+    needs: build
+    if: github.ref == 'refs/heads/master' && github.event_name == 'push'
+    runs-on: ubuntu-latest
+    
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Download artifacts
+      uses: actions/download-artifact@v4
+      with:
+        name: release-files
+
+    - name: Set executable
+      run: chmod +x tdxhq_server libtdx_api.so
+
+    - name: Create Release
+      uses: softprops/action-gh-release@v1
+      with:
+        body: 'TDX Stock Market Data API Server'
+        files: |
+          tdxhq_server
+          libtdx_api.so
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

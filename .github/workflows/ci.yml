@@ -58,11 +58,12 @@ jobs:
       run: chmod +x tdxhq_server libtdx_api.so
 
     - name: Create Release
-      uses: softprops/action-gh-release@v1
+      uses: softprops/action-gh-release@v2
       with:
         body: 'TDX Stock Market Data API Server'
         files: |
           tdxhq_server
           libtdx_api.so
+        generate_release_notes: true
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

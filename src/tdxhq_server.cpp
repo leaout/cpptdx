@@ -1,9 +1,8 @@
 #include <iostream>
-// #include "lolog/Lolog-Inl.h"
 #include "config.h"
 #include "app.h"
 #include "include/tdxhq_api.h"
-#include "rpc_service.h"
+#include "http_service.h"
 
 using namespace cpptdx;
 

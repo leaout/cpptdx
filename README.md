@@ -1,39 +1,45 @@
-## dependencies
-```
-apt install -y libyaml-cpp-dev
-```
-```
-apt install -y libboost-all-dev libasio-dev
+# cpptdx - TDX Stock Market Data API Server
+
+C++17 project providing a TDX (TongDaXin) stock market data API server using cpp-httplib and Boost ASIO.
+
+## Dependencies
+
+```bash
+apt install -y libyaml-cpp-dev libboost-all-dev libasio-dev zlib1g-dev
 ```
 
-```
-header only cpp log system
-https://github.com/leaout/lolog
+## Build
 
-```
-```
-install brpc
-sudo apt-get install -y git g++ make libssl-dev libgflags-dev libprotobuf-dev libprotoc-dev protobuf-compiler libleveldb-dev
-wget https://codeload.github.com/apache/brpc/zip/refs/tags/1.9.0
-unzip brpc-1.9.0.zip
-cd brpc-1.9.0
-sh config_brpc.sh --headers=/usr/include --libs=/usr/lib
-make -j
-```
-```
-wget https://libzip.org/download/libzip-1.10.1.tar.gz
-tar -xvf libzip-1.10.1.tar.gz
-cd libzip-1.10.1
-./configure
-make
-sudo make install
-```
-## build
-```
+```bash
 mkdir _build
 cd _build
 cmake ..
 make
 ```
-    
-`
+
+## Run
+
+```bash
+./tdxhq_server
+```
+
+Server starts on port 8022 by default.
+
+## API Endpoints
+
+- `GET /health` - Health check
+- `GET /api/snapshots?stocks=[{"code":"600000","market":1},...]` - Get stock snapshots
+- `GET /api/securities?market=1&start=0` - Get security list
+- `GET /api/klines?cat=4&market=1&code=600000&start=0&count=100` - Get K-lines
+- `GET /api/finance?market=1&code=600000` - Get finance info
+
+## Configuration
+
+Edit `config/application.yml` to change server port and TDX server hosts.
+
+## Testing
+
+```bash
+cd _build && make run_tests
+./tests/run_tests
+```

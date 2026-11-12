@@ -40,31 +40,54 @@ namespace cpptdx{
     }
 
     inline std::vector<Kline> parse_kline(const char *data, int len, unsigned short category) {
-    if (len <= 0) {
+    if (!data || len < static_cast<int>(sizeof(std::uint16_t))) {
         return {};
     }
     std::vector<Kline> klines;
     int pos = 0;
 
-    unsigned short ret_count;
+    unsigned short ret_count = 0;
     memcpy(&ret_count, data + pos, sizeof(ret_count));
     pos += sizeof(ret_count);
+    constexpr int minimum_row_size = 16;
+    if (ret_count > static_cast<unsigned int>((len - pos) / minimum_row_size)) return {};
 
     int pre_diff_base = 0;
     for (int i = 0; i < ret_count; ++i) {
+        if (pos + 4 > len) return {};
         Kline kline;
         int year, month, day, hour, minute;
         std::tie(year, month, day, hour, minute, pos) = get_datetime(category, data, pos);
+        kline.year = year;
+        kline.month = month;
+        kline.day = day;
+        kline.hour = hour;
+        kline.minute = minute;
 
         int price_open_diff;
         int price_close_diff;
         int price_high_diff;
         int price_low_diff;
-        std::tie(price_open_diff, pos) = get_price(data, pos);
-        std::tie(price_close_diff, pos) = get_price(data, pos);
-        std::tie(price_high_diff, pos) = get_price(data, pos);
-        std::tie(price_low_diff, pos) = get_price(data, pos);
+        auto read_price = [&](int& value) {
+            if (pos >= len) return false;
+            const auto first = static_cast<unsigned char>(data[pos++]);
+            value = first & 0x3f;
+            const bool negative = (first & 0x40) != 0;
+            unsigned shift = 6;
+            auto byte = first;
+            while (byte & 0x80) {
+                if (pos >= len || shift >= 31) return false;
+                byte = static_cast<unsigned char>(data[pos++]);
+                value |= static_cast<int>(byte & 0x7f) << shift;
+                shift += 7;
+            }
+            if (negative) value = -value;
+            return true;
+        };
+        if (!read_price(price_open_diff) || !read_price(price_close_diff) ||
+            !read_price(price_high_diff) || !read_price(price_low_diff)) return {};
 
+        if (pos + 8 > len) return {};
         int vol_raw;
         memcpy(&vol_raw, data + pos, sizeof(vol_raw));
         kline.vol = get_volume(vol_raw);

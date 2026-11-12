@@ -2,13 +2,18 @@ server:
   # server port
   port: 8022
 
+database:
+  path: data/cpptdx.duckdb
+
 tdx:
   hosts:
- # - host: 119.147.212.81
- #   port: 7709
-  - host: 119.147.212.81
+  - host: 180.153.18.170
     port: 7709
   - host: 119.147.212.81
     port: 7709
-  - host: 119.147.212.81
-    port: 7709
+
+exhq:
+  # Configure one or more ExHq-compatible endpoints here (normally port 7727).
+  hosts:
+  - host: 116.205.143.214
+    port: 7727

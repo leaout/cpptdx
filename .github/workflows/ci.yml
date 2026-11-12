@@ -20,14 +20,24 @@ jobs:
         sudo apt-get update
         sudo apt-get install -y libyaml-cpp-dev libboost-all-dev libasio-dev zlib1g-dev
 
+    - name: Install DuckDB C API
+      run: |
+        mkdir -p /tmp/duckdb
+        curl -fsSL https://install.duckdb.org/v1.5.4/libduckdb-linux-amd64.zip -o /tmp/libduckdb.zip
+        echo "838d98a85e697bab9935010c88a8c67d3312ccedcab4cb4a0ba01da65113bb70  /tmp/libduckdb.zip" | sha256sum --check
+        unzip -q /tmp/libduckdb.zip -d /tmp/duckdb
+
     - name: Create build directory
       run: mkdir -p _build
 
     - name: Configure
-      run: cd _build && cmake ..
+      run: cd _build && cmake .. -DDUCKDB_ROOT=/tmp/duckdb
 
     - name: Build
       run: cd _build && make -j$(nproc)
+
+    - name: Bundle DuckDB runtime
+      run: cp /tmp/duckdb/libduckdb.so _build/libduckdb.so
 
     - name: Run tests
       run: cd _build && ./tests/run_tests
@@ -39,6 +49,7 @@ jobs:
         path: |
           _build/tdxhq_server
           _build/libtdx_api.so
+          _build/libduckdb.so
         retention-days: 7
 
   release:
@@ -55,7 +66,7 @@ jobs:
         name: release-files
 
     - name: Set executable
-      run: chmod +x tdxhq_server libtdx_api.so
+      run: chmod +x tdxhq_server libtdx_api.so libduckdb.so
 
     - name: Create Release
       uses: softprops/action-gh-release@v2
@@ -64,6 +75,7 @@ jobs:
         files: |
           tdxhq_server
           libtdx_api.so
+          libduckdb.so
         generate_release_notes: true
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

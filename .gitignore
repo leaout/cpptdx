@@ -8,6 +8,15 @@
 *.a
 *
 */
+!AGENTS.md
+!docs/
+!docs/**
+!include/
+!include/**
+!src/
+!src/**
+!src/storage/
+!src/storage/**
 release/*
 deps/boost/stage
 deps/boost/doc

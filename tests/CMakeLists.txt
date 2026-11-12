@@ -23,7 +23,13 @@ set(TEST_SOURCES
 )
 
 add_executable(run_tests ${TEST_SOURCES})
+target_sources(run_tests PRIVATE ${CMAKE_SOURCE_DIR}/src/storage/market_store.cpp)
 target_link_libraries(run_tests
     Threads::Threads
     ${ZLIB_LIBRARIES}
 )
+if(DUCKDB_INCLUDE_DIR AND DUCKDB_LIBRARY)
+    target_include_directories(run_tests PRIVATE ${DUCKDB_INCLUDE_DIR})
+    target_compile_definitions(run_tests PRIVATE CPPTDX_WITH_DUCKDB)
+    target_link_libraries(run_tests ${DUCKDB_LIBRARY})
+endif()

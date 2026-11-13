@@ -1,5 +1,7 @@
 # cpptdx - TDX Stock Market Data API Server
 
+中文使用说明与完整 HTTP 接口参数见 [中文文档](docs/API_CN.md)。
+
 C++17 project providing a TDX (TongDaXin) stock market data API server using cpp-httplib and Boost ASIO.
 
 ## Dependencies

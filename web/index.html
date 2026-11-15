@@ -1,0 +1,223 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#292521">
+  <title>cpptdx｜行情可视化工作台</title>
+  <style>
+    :root{
+      color-scheme:light;
+      --mist:#f1eee8;--paper:#fffefa;--ink:#302b26;--navy:#292521;
+      --blue:#c05a36;--line:#ded7cc;--muted:#786f65;--soft:#f5f1ea;
+      --mint:#39765b;--red:#b64235;--focus:#c05a36;
+      font-family:"Microsoft YaHei","PingFang SC","Noto Sans CJK SC",sans-serif;
+    }
+    *{box-sizing:border-box}
+    body{margin:0;background:var(--mist);color:var(--ink);min-height:100vh}
+    button,input,select,textarea{font:inherit}
+    button{cursor:pointer}
+    .masthead{background:var(--navy);color:#f4f8f8;border-bottom:4px solid var(--blue)}
+    .masthead-inner{max-width:1600px;margin:auto;min-height:82px;padding:15px 30px;display:flex;align-items:center;justify-content:space-between;gap:24px}
+    .brand{display:flex;align-items:center;gap:15px;min-width:0}
+    .mark{width:44px;height:44px;border:1px solid #86b3be;border-radius:50%;display:grid;place-items:center;color:#a6d7d3;font:700 13px ui-monospace,Consolas,monospace;letter-spacing:-1px;flex:0 0 auto}
+    .brand-title{font-size:19px;font-weight:700;letter-spacing:.03em}.brand-sub{color:#b9cbd0;font-size:12px;margin-top:4px}
+    .statusbar{display:flex;align-items:center;gap:8px;flex-wrap:wrap;justify-content:flex-end}
+    .status{display:flex;align-items:center;gap:7px;border:1px solid #55717a;border-radius:4px;padding:7px 10px;color:#d1e0e2;font-size:12px}
+    .led{width:7px;height:7px;border-radius:50%;background:#82939a}.led.ok{background:#74d2b1}.led.err{background:#ee8e78}
+    .refresh-status{border:1px solid #55717a;background:transparent;color:#e5eff0;padding:7px 10px;border-radius:4px;font-size:12px}.refresh-status:hover{background:#254b5b}
+    .page{max-width:1600px;margin:0 auto;padding:25px 30px 40px}
+    .intro{display:flex;align-items:flex-end;justify-content:space-between;gap:20px;margin-bottom:20px}
+    h1{font-size:27px;line-height:1.2;margin:0;font-weight:700;letter-spacing:-.035em}.intro p{color:var(--muted);font-size:13px;margin:8px 0 0;line-height:1.6}
+    .intro-note{font-size:11px;line-height:1.6;color:var(--muted);max-width:275px;text-align:right}
+    .desk{display:grid;grid-template-columns:264px minmax(0,1fr);gap:16px;align-items:stretch}
+    .rail,.workspace{background:var(--paper);border:1px solid var(--line);border-radius:5px;min-width:0}
+    .rail{padding:17px 13px 14px;display:flex;flex-direction:column;max-height:calc(100vh - 220px);min-height:620px}
+    .rail-heading{font-size:13px;font-weight:700;margin:0 7px 12px;display:flex;justify-content:space-between;align-items:center}
+    .rail-heading small{font-size:10px;color:var(--muted);font-weight:500}
+    .search{width:100%;border:1px solid var(--line);border-radius:4px;background:#fff;padding:9px 10px;color:var(--ink);font-size:12px;outline:none;margin-bottom:13px}
+    .search:focus,.param-input:focus{border-color:var(--focus);box-shadow:0 0 0 3px #1e71881a}
+    .families{display:flex;flex-direction:column;gap:2px;margin-bottom:12px}
+    .family{border:0;border-left:2px solid transparent;background:transparent;color:#526971;text-align:left;padding:8px 9px;font-size:12px;border-radius:0 4px 4px 0}
+    .family:hover{background:var(--soft);color:var(--ink)}.family.active{border-left-color:var(--blue);background:#eaf2f3;color:var(--navy);font-weight:700}
+    .api-list{border-top:1px solid var(--line);padding-top:9px;overflow:auto;min-height:0;scrollbar-color:#b7c7ca transparent;scrollbar-width:thin}
+    .api-item{position:relative;width:100%;border:0;background:transparent;text-align:left;padding:9px 9px 9px 11px;border-radius:3px;color:var(--ink);display:block}
+    .api-item:hover{background:#f0f5f4}.api-item.active{background:#e8f1f2;box-shadow:inset 2px 0 var(--blue)}
+    .api-name{font-size:12px;font-weight:650;display:block;margin-bottom:4px}.api-path{font:10px/1.4 ui-monospace,"Cascadia Code",Consolas,monospace;color:var(--muted);word-break:break-all;display:block}
+    .api-mode{float:right;font-size:9px;color:var(--blue);font-weight:600;margin-left:6px}
+    .work{min-width:0;display:grid;grid-template-columns:minmax(390px,.78fr) minmax(0,1.22fr);gap:16px;align-items:stretch}
+    .request,.response{background:var(--paper);border:1px solid var(--line);border-radius:5px;min-width:0}
+    .request{padding:19px 21px 17px}
+    .request-head{display:flex;align-items:flex-start;justify-content:space-between;gap:15px;margin-bottom:16px}
+    .request-title{font-size:17px;font-weight:700;margin:0}.request-desc{font-size:12px;color:var(--muted);margin:5px 0 0;line-height:1.5}
+    .method{font:700 10px ui-monospace,"Cascadia Code",Consolas,monospace;color:var(--blue);border:1px solid #9dbcc3;padding:5px 8px;border-radius:3px;flex:0 0 auto}
+    .route{background:#eff4f3;border-left:2px solid var(--blue);padding:9px 11px;font:11px/1.5 ui-monospace,"Cascadia Code",Consolas,monospace;color:#315562;word-break:break-all;margin-bottom:15px}
+    .params-title{font-size:11px;color:var(--muted);margin-bottom:7px}
+    .params{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:11px 13px}
+    .field{min-width:0}.field.wide{grid-column:1/-1}.field-label{display:flex;justify-content:space-between;gap:8px;font-size:11px;font-weight:650;margin-bottom:5px}.field-hint{font-size:10px;color:var(--muted);font-weight:400;text-align:right}
+    .param-input{width:100%;min-width:0;border:1px solid var(--line);border-radius:4px;background:#fff;padding:9px 10px;color:var(--ink);font-size:12px;outline:none}
+    textarea.param-input{min-height:65px;resize:vertical;font:11px/1.5 ui-monospace,"Cascadia Code",Consolas,monospace}
+    .request-actions{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-top:15px}
+    .request-tip{font-size:10px;color:var(--muted);line-height:1.5}.actions{display:flex;gap:8px;flex:0 0 auto}
+    .send,.clear{border-radius:4px;padding:9px 14px;font-size:12px;font-weight:700}.send{border:1px solid var(--navy);background:var(--navy);color:#f5faf9}.send:hover{background:#20566a}.send:disabled{opacity:.55;cursor:wait}.clear{border:1px solid var(--line);background:transparent;color:#536972}.clear:hover{background:var(--soft)}
+    .response{display:flex;flex-direction:column;min-height:620px;overflow:hidden}
+    .response-head{padding:14px 18px;border-bottom:1px solid var(--line);display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
+    .response-title{font-size:13px;font-weight:700}.response-meta{display:flex;align-items:center;gap:7px;flex-wrap:wrap}.badge{border:1px solid var(--line);border-radius:3px;padding:5px 7px;font-size:10px;color:var(--muted);font-variant-numeric:tabular-nums}.badge.good{border-color:#a8d3c6;color:#147459;background:#f0f8f5}.badge.bad{border-color:#e1b8ae;color:#a63d32;background:#fff5f2}
+    .response-body{padding:14px 17px;min-height:0;overflow:auto;flex:1}.empty{min-height:220px;display:flex;flex-direction:column;justify-content:center;align-items:flex-start;padding:28px 24px;color:var(--muted);font-size:13px;line-height:1.8}.empty strong{color:var(--ink);font-size:14px;margin-bottom:5px}.empty-mark{width:35px;height:3px;background:var(--blue);margin-bottom:14px}
+    .summary{font-size:11px;color:var(--muted);margin:0 0 9px;font-variant-numeric:tabular-nums}.table-wrap{overflow:auto;border:1px solid var(--line);border-radius:3px;max-height:460px}
+    table{border-collapse:collapse;width:100%;font-size:11px;white-space:nowrap;font-variant-numeric:tabular-nums}th,td{text-align:left;padding:9px 10px;border-bottom:1px solid #e0e7e7;max-width:320px;overflow:hidden;text-overflow:ellipsis}th{background:#edf2f1;color:#536b73;position:sticky;top:0;font-size:10px;font-weight:700;z-index:1}td{color:#253f49}tr:nth-child(even) td{background:#f7f9f8}tr:last-child td{border-bottom:0}tr:hover td{background:#eaf3f2}.raw{margin-top:11px;border-top:1px solid var(--line);border-bottom:1px solid var(--line)}.raw summary{cursor:pointer;padding:9px 3px;color:#526a72;font-size:11px}.raw pre{margin:0;padding:11px;background:#f1f5f4;max-height:300px;overflow:auto;font:11px/1.6 ui-monospace,"Cascadia Code",Consolas,monospace;color:#31515d;white-space:pre-wrap;word-break:break-word}.error{padding:12px;border-left:3px solid var(--red);background:#fff4f1;color:#85352c;font:11px/1.6 ui-monospace,Consolas,monospace;white-space:pre-wrap;word-break:break-word}.spinner{display:inline-block;width:11px;height:11px;border:2px solid #c8d8d9;border-top-color:var(--blue);border-radius:50%;animation:spin .7s linear infinite;margin-right:7px;vertical-align:-2px}@keyframes spin{to{transform:rotate(360deg)}}
+    :focus-visible{outline:3px solid #4c9cb0;outline-offset:2px}
+    @media(prefers-reduced-motion:reduce){*,*::before,*::after{animation-duration:.01ms!important;transition-duration:.01ms!important;scroll-behavior:auto!important}}
+    @media(max-width:1200px){.desk{grid-template-columns:220px minmax(0,1fr)}.work{grid-template-columns:minmax(0,1fr);grid-template-rows:auto minmax(460px,1fr)}.response{min-height:460px}.intro-note{max-width:220px}}
+    @media(max-width:760px){.masthead-inner{padding:13px 16px;align-items:flex-start;flex-direction:column}.statusbar{justify-content:flex-start}.page{padding:20px 14px 30px}.intro{align-items:flex-start;flex-direction:column;margin-bottom:14px}.intro-note{text-align:left;max-width:none}.desk{grid-template-columns:1fr}.rail{min-height:0;max-height:none;padding:13px}.families{display:flex;flex-direction:row;overflow:auto;gap:4px;margin-bottom:9px}.family{white-space:nowrap;border-left:0;border-bottom:2px solid transparent}.family.active{border-bottom-color:var(--blue)}.api-list{display:flex;gap:5px;overflow-x:auto;overflow-y:hidden;padding:8px 0 2px;border-top:1px solid var(--line)}.api-item{min-width:150px;width:150px;border:1px solid var(--line)}.api-item.active{box-shadow:inset 0 -2px var(--blue)}.work{grid-template-rows:auto minmax(350px,1fr)}}
+    @media(max-width:480px){h1{font-size:23px}.brand-sub{max-width:230px}.request{padding:15px}.request-head{margin-bottom:12px}.params{grid-template-columns:1fr 1fr;gap:9px}.field-hint{font-size:9px}.request-actions{align-items:flex-end;flex-direction:column}.actions{width:100%}.send,.clear{flex:1}.response-head{padding:12px}.response-body{padding:12px}.badge{font-size:9px}}
+    .market-view{display:grid;gap:12px;margin-bottom:14px}.quote-strip{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:8px}.quote-card{background:#f8f4ec;border:1px solid var(--line);border-radius:4px;padding:12px 13px;min-width:0}.quote-label{font-size:10px;color:var(--muted);margin-bottom:6px}.quote-value{font:600 19px/1.2 ui-monospace,"Cascadia Code",Consolas,monospace;font-variant-numeric:tabular-nums;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.quote-value.up{color:#bc4438}.quote-value.down{color:#24795e}.quote-sub{font-size:10px;color:var(--muted);margin-top:5px}
+    .chart-panel{background:#fffefa;border:1px solid var(--line);border-radius:4px;overflow:hidden}.chart-head{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:11px 13px;border-bottom:1px solid var(--line)}.chart-title{font-size:12px;font-weight:700}.chart-note{font-size:10px;color:var(--muted)}.chart-scroll{overflow:auto}.market-chart{display:block;width:100%;min-width:560px;height:auto}.market-chart text{font-family:"Microsoft YaHei","PingFang SC",sans-serif;font-size:10px;fill:#786f65;font-variant-numeric:tabular-nums}.chart-grid{stroke:#ebe5db;stroke-width:1}.chart-axis{stroke:#d9d1c5;stroke-width:1}.chart-separator{stroke:#cfc3b2;stroke-width:1;stroke-dasharray:3 4}.candle-up,.line-up{stroke:#c8493d;fill:#c8493d}.candle-down,.line-down{stroke:#23846d;fill:#23846d}.volume-up{fill:#c8493d;opacity:.55}.volume-down{fill:#23846d;opacity:.55}.price-line{fill:none;stroke:#c05a36;stroke-width:2}.average-line{fill:none;stroke:#85714d;stroke-width:1.5;stroke-dasharray:4 3}.chart-cross{stroke:#9a8d7e;stroke-width:1;stroke-dasharray:3 3}.book-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}.book-side{border:1px solid var(--line);border-radius:4px;overflow:hidden}.book-side h3{font-size:11px;margin:0;padding:9px 10px;background:#f5f1e9}.book-row{display:grid;grid-template-columns:38px 1fr 1fr;gap:6px;padding:7px 10px;border-top:1px solid #eee8df;font:11px ui-monospace,Consolas,monospace;font-variant-numeric:tabular-nums}.book-row span:last-child{text-align:right;color:var(--muted)}.book-bid .book-price{color:#23846d}.book-ask .book-price{color:#c8493d}.visual-table{margin-top:12px}.visual-table>summary{font-size:11px;color:var(--muted);cursor:pointer;padding:8px 2px}.visual-table[open]>summary{border-bottom:1px solid var(--line);margin-bottom:9px}.market-empty{padding:22px 14px;border:1px dashed var(--line);color:var(--muted);font-size:12px;line-height:1.7;border-radius:4px}.market-empty strong{display:block;color:var(--ink);font-size:13px;margin-bottom:4px}
+    /* Warm graphite and terracotta palette; overrides earlier cool-toned details. */
+    .masthead{color:#f8f4ed}.mark{border-color:#a89478;color:#e7c9a7}.brand-sub{color:#c9c0b4}
+    .status{border-color:#62594f;color:#e4ddd3}.refresh-status{border-color:#62594f;color:#f1eae0}.refresh-status:hover{background:#40372f}
+    .search:focus,.param-input:focus{box-shadow:0 0 0 3px #c05a361a}
+    .family{color:#696056}.family.active{background:#f7ebe4}
+    .api-list{scrollbar-color:#c8bbaa transparent}.api-item:hover{background:#f7f3ec}.api-item.active{background:#f8eee7}
+    .method{border-color:#dfb9a5;color:#a8462a}.route{background:#f7f2ea;color:#5c4a3b}
+    .send{color:#fbf7f0}.send:hover{background:#483b31}.clear{color:#665b50}
+    th,td{border-bottom-color:#e7e0d6}th{background:#f3efe7;color:#62584e}td{color:#38312b}
+    tr:nth-child(even) td{background:#faf8f3}tr:hover td{background:#f8eee7}
+    .raw summary{color:#665b50}.raw pre{background:#f7f3ec;color:#514337}
+    .spinner{border-color:#ded4c7;border-top-color:var(--blue)}:focus-visible{outline-color:#d9825c}
+    @media(max-width:760px){.family.active{border-bottom-color:var(--blue)}.api-item.active{box-shadow:inset 0 -2px var(--blue)}}
+    @media(max-width:600px){.quote-strip{grid-template-columns:repeat(2,minmax(0,1fr))}.book-grid{grid-template-columns:1fr}.chart-head{align-items:flex-start;flex-direction:column}}
+  </style>
+</head>
+<body>
+  <header class="masthead">
+    <div class="masthead-inner">
+      <div class="brand"><div class="mark" aria-hidden="true">TDX</div><div><div class="brand-title">行情可视化工作台</div><div class="brand-sub">HQ / ExHq 实时行情 · 历史数据 · DuckDB</div></div></div>
+      <div class="statusbar" aria-label="服务状态">
+        <div class="status"><i id="healthDot" class="led"></i><span>HTTP 服务</span><b id="healthText">检查中</b></div>
+        <div class="status"><i id="dbDot" class="led"></i><span>DuckDB</span><b id="dbText">检查中</b></div>
+        <button id="refreshStatus" class="refresh-status" type="button">刷新状态</button>
+      </div>
+    </div>
+  </header>
+  <main class="page">
+    <section class="intro">
+      <div><h1>行情图表工作台</h1><p>K 线、分时、盘口与逐笔成交自动生成行情视图；其他接口以表格展示，并保留完整 JSON 响应。</p></div>
+      <div class="intro-note">空图表表示接口当前返回空数组。远程数据成功返回后会写入缓存，可切换本地接口查看。</div>
+    </section>
+    <div class="desk">
+      <aside class="rail" aria-label="接口目录">
+        <div class="rail-heading">接口目录 <small id="apiCount"></small></div>
+        <input id="search" class="search" type="search" placeholder="搜索名称或路径" aria-label="搜索接口">
+        <nav id="families" class="families" aria-label="接口分类"></nav>
+        <div id="apiList" class="api-list" role="listbox" aria-label="接口列表"></div>
+      </aside>
+      <div class="work">
+        <section class="request" aria-labelledby="requestTitle">
+          <div class="request-head"><div><h2 id="requestTitle" class="request-title">选择一个接口</h2><p id="requestDesc" class="request-desc">参数会按接口定义自动生成，可以修改后重复请求。</p></div><span class="method">GET</span></div>
+          <div id="route" class="route">选择左侧接口后显示请求地址</div>
+          <form id="requestForm">
+            <div id="fields" class="params"></div>
+            <div class="request-actions"><div class="request-tip">数字字段使用市场编号、页偏移和数量等参数。快照 stocks 参数填入 JSON 数组。</div><div class="actions"><button id="clear" class="clear" type="button">清除结果</button><button id="send" class="send" type="submit">发送请求</button></div></div>
+          </form>
+        </section>
+        <section class="response" aria-live="polite" aria-labelledby="responseTitle">
+          <div class="response-head"><div id="responseTitle" class="response-title">行情视图 / 接口数据</div><div class="response-meta"><span id="status" class="badge">尚未请求</span><span id="duration" class="badge">耗时 —</span><span id="contentType" class="badge">—</span></div></div>
+          <div id="output" class="response-body"><div class="empty"><i class="empty-mark"></i><strong>请求结果会显示在这里</strong><span>远程接口用于获取行情并填充缓存，本地接口用于核对已落盘数据。</span></div></div>
+        </section>
+      </div>
+    </div>
+  </main>
+  <script>
+    const defs=[];
+    const f=(key,value="",hint="",type="text")=>({key,value,hint,type});
+    function pair(group,label,path,fields=[],binary=false){defs.push({group,label:`${label}（远程）`,path,fields,binary,local:false});defs.push({group,label:`${label}（本地缓存）`,path:path.replace(/^\/api/,"/api/local"),fields,binary,local:true})}
+    const pMarket=f("market","1","HQ 市场：0 深圳，1 上海"),pCode=f("code","600000","证券或品种代码"),pPage=[f("start","0","起始偏移"),f("count","100","返回条数")];
+    defs.push({group:"服务状态",label:"HTTP 健康检查",path:"/health",fields:[],local:false},{group:"服务状态",label:"DuckDB 状态",path:"/api/storage/status",fields:[],local:false});
+    pair("HQ 证券","证券总数","/api/securities/count",[pMarket]);
+    pair("HQ 证券","证券列表","/api/securities",[pMarket,f("start","0","页起始偏移")]);
+    pair("HQ K 线","个股 K 线","/api/klines",[f("market","1","0 深圳，1 上海"),pCode,f("cat","9","周期编号 0–11"),...pPage]);
+    pair("HQ K 线","指数 K 线","/api/index/klines",[f("market","1","指数市场编号"),f("code","000001","指数代码"),f("cat","9","周期编号 0–11"),...pPage]);
+    pair("HQ K 线","日期范围日线","/api/kdata",[pCode,f("start_date","2026-01-01","YYYY-MM-DD 或 YYYYMMDD"),f("end_date","2026-11-12","YYYY-MM-DD 或 YYYYMMDD")]);
+    pair("HQ 行情","快照","/api/snapshots",[f("stocks",'[{"market":1,"code":"600000"}]',"JSON 数组，会自动 URL 编码","textarea")]);
+    pair("HQ 行情","当日分时","/api/minute",[pMarket,pCode]);
+    pair("HQ 行情","历史分时","/api/history/minute",[pMarket,pCode,f("date","20261112","日期 YYYYMMDD")]);
+    pair("HQ 行情","当日逐笔","/api/transactions",[pMarket,pCode,...pPage]);
+    pair("HQ 行情","历史逐笔","/api/history/transactions",[pMarket,pCode,f("date","20261112","日期 YYYYMMDD"),...pPage]);
+    pair("HQ 公司数据","资料目录","/api/company/category",[pMarket,pCode]);
+    pair("HQ 公司数据","资料内容","/api/company/content",[pMarket,pCode,f("filename","600000.txt","从资料目录获取"),f("start","0","字节偏移"),f("length","256","单次最多 1 MiB")]);
+    pair("HQ 公司数据","除权除息","/api/xdxr",[pMarket,pCode]);
+    pair("HQ 公司数据","财务数据","/api/finance",[pMarket,pCode]);
+    pair("HQ 板块","板块文件元数据","/api/block/meta",[f("blockfile","block_gn.dat","如 block_gn.dat")]);
+    pair("HQ 板块","板块文件内容","/api/block/content",[f("blockfile","block_gn.dat","先读取元数据"),f("start","0","字节偏移"),f("size","256","单次最多 1,000,000")],true);
+    pair("HQ 板块","解析板块成分","/api/block/parsed",[f("blockfile","block_gn.dat","分块下载后解析并缓存")]);
+    const exMarket=f("market","42","ExHq 市场编号；先查市场/品种目录"),exCode=f("code","IMCI","ExHq 品种代码");
+    pair("ExHq 目录","市场目录","/api/exhq/markets");
+    pair("ExHq 目录","品种总数","/api/exhq/instruments/count");
+    pair("ExHq 目录","品种列表","/api/exhq/instruments",pPage);
+    pair("ExHq 行情","单品种报价","/api/exhq/quote",[exMarket,exCode]);
+    pair("ExHq 行情","报价列表","/api/exhq/quote-list",[exMarket,f("category","3","2 港股，3 期货"),...pPage]);
+    pair("ExHq 行情","K 线","/api/exhq/bars",[exMarket,exCode,f("category","9","周期编号 0–11"),...pPage]);
+    pair("ExHq 行情","日期范围 K 线","/api/exhq/bars/range",[exMarket,exCode,f("start_date","20261101","YYYYMMDD"),f("end_date","20261112","YYYYMMDD")]);
+    pair("ExHq 行情","当日分时","/api/exhq/minute",[exMarket,exCode]);
+    pair("ExHq 行情","历史分时","/api/exhq/history/minute",[exMarket,exCode,f("date","20261112","YYYYMMDD")]);
+    pair("ExHq 行情","当日逐笔","/api/exhq/transactions",[exMarket,exCode,...pPage]);
+    pair("ExHq 行情","历史逐笔","/api/exhq/history/transactions",[exMarket,exCode,f("date","20261112","YYYYMMDD"),...pPage]);
+
+    const familiesEl=document.querySelector("#families"),apiList=document.querySelector("#apiList"),search=document.querySelector("#search"),fieldsEl=document.querySelector("#fields"),routeEl=document.querySelector("#route"),form=document.querySelector("#requestForm"),output=document.querySelector("#output");
+    let activeGroup="HQ K 线",activeApi=defs.find(d=>d.path==="/api/klines"&&!d.local);
+    document.querySelector("#apiCount").textContent=`${defs.length} 个接口`;
+    function setBadge(el,text,state=""){el.textContent=text;el.className="badge"+(state?` ${state}`:"")}
+    function renderFamilies(){familiesEl.replaceChildren();const groups=[...new Set(defs.map(d=>d.group))];groups.forEach(group=>{const button=document.createElement("button");button.type="button";button.className="family"+(group===activeGroup?" active":"");button.textContent=group;button.setAttribute("aria-pressed",String(group===activeGroup));button.addEventListener("click",()=>{activeGroup=group;renderFamilies();renderList()});familiesEl.append(button)})}
+    function renderList(){apiList.replaceChildren();const query=search.value.trim().toLowerCase();const items=defs.filter(d=>d.group===activeGroup&&(!query||`${d.label} ${d.path}`.toLowerCase().includes(query)));if(!items.length){const empty=document.createElement("div");empty.className="empty";empty.textContent="此分类没有匹配的接口";apiList.append(empty);return}items.forEach(d=>{const button=document.createElement("button");button.type="button";button.className="api-item"+(d===activeApi?" active":"");button.setAttribute("role","option");button.setAttribute("aria-selected",String(d===activeApi));const name=document.createElement("span");name.className="api-name";name.textContent=d.label;const mode=document.createElement("span");mode.className="api-mode";mode.textContent=d.local?"缓存":"远程";name.append(mode);const path=document.createElement("span");path.className="api-path";path.textContent=d.path;button.append(name,path);button.addEventListener("click",()=>selectApi(d));apiList.append(button)})}
+    function renderFields(){fieldsEl.replaceChildren();activeApi.fields.forEach(field=>{const label=document.createElement("label");label.className="field"+(field.type==="textarea"?" wide":"");const head=document.createElement("span");head.className="field-label";const key=document.createElement("span");key.textContent=field.key;const hint=document.createElement("span");hint.className="field-hint";hint.textContent=field.hint;head.append(key,hint);const input=document.createElement(field.type==="textarea"?"textarea":"input");input.className="param-input";input.dataset.key=field.key;input.value=field.value;if(field.type!=="textarea"){input.type="text";if(["market","cat","category","start","count","date","start_date","end_date","length","size"].includes(field.key))input.inputMode="numeric"}label.append(head,input);fieldsEl.append(label)});routeEl.textContent=activeApi.path;document.querySelector("#requestTitle").textContent=activeApi.label;document.querySelector("#requestDesc").textContent=activeApi.local?"仅读取 DuckDB 已缓存数据，不会自动访问行情服务器。":"访问已配置的行情服务，并在支持的接口中将结果写入 DuckDB。"}
+    function selectApi(d){activeApi=d;activeGroup=d.group;renderFamilies();renderList();renderFields();setBadge(document.querySelector("#status"),"尚未请求");setBadge(document.querySelector("#duration"),"耗时 —");setBadge(document.querySelector("#contentType"),"—")}
+    search.addEventListener("input",renderList);renderFamilies();renderList();renderFields();
+    function displayTable(data){const wrap=document.createElement("div"),array=Array.isArray(data),object=data!==null&&typeof data==="object"&&!array;const rows=array?data.slice(0,300):(object?Object.entries(data).map(([字段,值])=>({字段,值})):[{字段:"返回值",值:data}]);const summary=document.createElement("p");summary.className="summary";summary.textContent=array?`共 ${data.length} 条${data.length>300?"，表格显示前 300 条":""}`:(object?`对象含 ${rows.length} 个字段`:"接口返回单个值");wrap.append(summary);if(!rows.length){const empty=document.createElement("div");empty.className="empty";const mark=document.createElement("i");mark.className="empty-mark";const title=document.createElement("strong");title.textContent="没有记录";const note=document.createElement("span");note.textContent="确认证券代码、日期和行情节点后重试；本地接口需要先填充缓存。";empty.append(mark,title,note);wrap.append(empty);return wrap}const columns=array&&rows[0]&&typeof rows[0]==="object"&&!Array.isArray(rows[0])?[...new Set(rows.flatMap(row=>Object.keys(row)))]:array?["序号","值"]:["字段","值"];const scroller=document.createElement("div");scroller.className="table-wrap";const table=document.createElement("table"),thead=document.createElement("thead"),headRow=document.createElement("tr");columns.forEach(column=>{const th=document.createElement("th");th.textContent=column;headRow.append(th)});thead.append(headRow);table.append(thead);const tbody=document.createElement("tbody");rows.forEach((row,index)=>{const tr=document.createElement("tr"),values=array?(row&&typeof row==="object"&&!Array.isArray(row)?columns.map(column=>row[column]):[index+1,row]):[row.字段,row.值];values.forEach(value=>{const td=document.createElement("td");td.textContent=value===undefined?"":typeof value==="object"?JSON.stringify(value):String(value);td.title=td.textContent;tr.append(td)});tbody.append(tr)});table.append(tbody);scroller.append(table);wrap.append(scroller);return wrap}
+    function rawPanel(data){const details=document.createElement("details");details.className="raw";const summary=document.createElement("summary");summary.textContent="查看完整原始响应";const pre=document.createElement("pre");pre.textContent=typeof data==="string"?data:JSON.stringify(data,null,2);details.append(summary,pre);return details}
+    const svgNs="http://www.w3.org/2000/svg";
+    function svg(tag,attrs={}){const node=document.createElementNS(svgNs,tag);for(const [key,value]of Object.entries(attrs))node.setAttribute(key,String(value));return node}
+    function nice(value,digits=2){const number=Number(value);return Number.isFinite(number)?number.toLocaleString("zh-CN",{minimumFractionDigits:digits,maximumFractionDigits:digits}):"—"}
+    function chartPanel(title,note){const panel=document.createElement("section");panel.className="chart-panel";const head=document.createElement("div");head.className="chart-head";const heading=document.createElement("span");heading.className="chart-title";heading.textContent=title;const caption=document.createElement("span");caption.className="chart-note";caption.textContent=note;head.append(heading,caption);panel.append(head);return panel}
+    function chartEmpty(message){const empty=document.createElement("div");empty.className="market-empty";const strong=document.createElement("strong");strong.textContent="当前没有可绘制的行情记录";const text=document.createElement("span");text.textContent=message;empty.append(strong,text);return empty}
+    function addSeriesChart(panel,rows,{kind="line",title="",volumeKey="vol",averageKey="avg_price"}={}){
+      const values=rows.map(row=>Number(row.close??row.price)).filter(Number.isFinite);if(!values.length)return panel.append(chartEmpty("接口返回的记录中没有可识别的价格字段。"));
+      const W=920,H=430,L=62,R=18,T=24,priceH=270,volTop=328,volH=66,axisY=405,plotW=W-L-R,lo=Math.min(...rows.map(r=>Number(r.low??r.price??r.close)).filter(Number.isFinite)),hi=Math.max(...rows.map(r=>Number(r.high??r.price??r.close)).filter(Number.isFinite)),pad=(hi-lo||Math.abs(hi)*.01||1)*.08,min=lo-pad,max=hi+pad,step=plotW/Math.max(rows.length,1),candleW=Math.max(2,Math.min(12,step*.58)),vols=rows.map(r=>Number(r[volumeKey]??r.trade??r.amount)||0),maxVol=Math.max(...vols,1);
+      const chart=svg("svg",{class:"market-chart",viewBox:`0 0 ${W} ${H}`,role:"img","aria-label":title});
+      const yPrice=v=>T+(max-v)/(max-min)*priceH,yVol=v=>volTop+volH-v/maxVol*volH;
+      for(let i=0;i<=4;i++){const val=max-(max-min)*i/4,y=T+priceH*i/4;chart.append(svg("line",{x1:L,y1:y,x2:W-R,y2:y,class:"chart-grid"}));const label=svg("text",{x:L-8,y:y+3,"text-anchor":"end"});label.textContent=nice(val,2);chart.append(label)}
+      chart.append(svg("line",{x1:L,y1:volTop,x2:W-R,y2:volTop,class:"chart-axis"}));
+      let pricePath="";
+      for(let i=0;i<rows.length;i++){
+        const row=rows[i],x=L+step*(i+.5),close=Number(row.close??row.price),open=Number(row.open??close),high=Number(row.high??Math.max(open,close)),low=Number(row.low??Math.min(open,close)),up=close>=open,cls=up?"candle-up":"candle-down";
+        if(kind==="candle"){
+          chart.append(svg("line",{x1:x,y1:yPrice(high),x2:x,y2:yPrice(low),class:cls,"stroke-width":1}));
+          chart.append(svg("rect",{x:x-candleW/2,y:Math.min(yPrice(open),yPrice(close)),width:candleW,height:Math.max(1,Math.abs(yPrice(open)-yPrice(close))),class:cls,rx:.5}));
+        }else{
+          const y=yPrice(close);pricePath+=`${pricePath?" L":"M"} ${x} ${y}`;
+        }
+        const volume=vols[i],vh=volume/maxVol*volH;chart.append(svg("rect",{x:x-candleW/2,y:volTop+volH-vh,width:candleW,height:Math.max(vh,.8),class:up?"volume-up":"volume-down"}));
+        const tooltip=svg("title");tooltip.textContent=`${row.datetime||row.time||`第 ${i+1} 条`}  开 ${nice(open)}  高 ${nice(high)}  低 ${nice(low)}  收 ${nice(close)}  量 ${nice(volume,0)}`;chart.lastChild.append(tooltip);
+      }
+      if(kind!=="candle"&&pricePath)chart.append(svg("path",{d:pricePath,class:"price-line"}));
+      if(kind==="line"&&rows.some(r=>Number.isFinite(Number(r[averageKey])))){
+        let path="";rows.forEach((row,i)=>{const v=Number(row[averageKey]);if(!Number.isFinite(v))return;path+=`${path?" L":"M"} ${L+step*(i+.5)} ${yPrice(v)}`});chart.append(svg("path",{d:path,class:"average-line"}));
+      }
+      const marks=[0,Math.floor((rows.length-1)/2),rows.length-1];for(const index of [...new Set(marks)]){const row=rows[index],x=L+step*(index+.5),label=svg("text",{x,y:axisY,"text-anchor":index===0?"start":(index===rows.length-1?"end":"middle")});label.textContent=String(row.datetime||row.time||row.date||`#${index+1}`).replace("T"," ").slice(0,16);chart.append(label)}
+      const vLabel=svg("text",{x:L-8,y:volTop+volH/2,"text-anchor":"end"});vLabel.textContent="成交量";chart.append(vLabel);
+      const scroll=document.createElement("div");scroll.className="chart-scroll";scroll.append(chart);panel.append(scroll);
+    }
+    function detailTable(data,title="查看全部接口记录") {const details=document.createElement("details");details.className="visual-table";const summary=document.createElement("summary");summary.textContent=title;details.append(summary,displayTable(data));return details}
+    function renderKlineView(data,api){const view=document.createElement("div");view.className="market-view";if(!Array.isArray(data)||!data.length){view.append(chartEmpty("接口当前返回空数组；有行情记录时，这里会绘制 OHLC 蜡烛和成交量。"));view.append(displayTable(data));return view}const valid=row=>{const o=Number(row.open),c=Number(row.close),h=Number(row.high),l=Number(row.low),year=Number(row.year??String(row.datetime||"").slice(0,4)),month=Number(row.month??String(row.datetime||"").slice(5,7)),day=Number(row.day??String(row.datetime||"").slice(8,10));return [o,c,h,l].every(Number.isFinite)&&l>0&&h>=Math.max(o,c)&&l<=Math.min(o,c)&&year>=1990&&year<=2100&&month>=1&&month<=12&&day>=1&&day<=31};const clean=data.filter(valid),invalid=data.length-clean.length;if(!clean.length){view.append(chartEmpty(`收到 ${data.length} 条记录，但 OHLC 或日期字段超出有效范围；为避免绘制误导性行情，图表已停用。原始数据仍可在下方展开查看。`));view.append(detailTable(data,"展开原始 K 线数据"));return view}const rows=clean.slice().sort((a,b)=>String(a.datetime||`${a.year||0}-${a.month||0}-${a.day||0}`).localeCompare(String(b.datetime||`${b.year||0}-${b.month||0}-${b.day||0}`)));if(invalid)view.append(chartEmpty(`检测到 ${invalid} 条异常记录，图表仅绘制 ${clean.length} 条有效记录；全部原始记录仍保留在明细表中。`));const latest=rows.at(-1),previous=rows.at(-2),delta=previous?Number(latest.close)-Number(previous.close):0,strip=document.createElement("div");strip.className="quote-strip";[["最新收盘",nice(latest.close)],["涨跌",previous?`${delta>0?"+":""}${nice(delta)}`:"—"],["当日高低",`${nice(latest.high)} / ${nice(latest.low)}`],["成交量",nice(latest.vol,0)],["成交额",nice(latest.amount)]].forEach(([label,value],i)=>{const card=document.createElement("div");card.className="quote-card";const l=document.createElement("div");l.className="quote-label";l.textContent=label;const v=document.createElement("div");v.className="quote-value"+(i===1?(delta>0?" up":delta<0?" down":""):"");v.textContent=value;card.append(l,v);strip.append(card)});const title=api.path.includes("exhq")?"ExHq K 线 · OHLC + 成交量":"K 线 · OHLC + 成交量";const panel=chartPanel(title,`${rows.length} 根 · ${rows[0].datetime||""} — ${latest.datetime||""}`);addSeriesChart(panel,rows,{kind:"candle",volumeKey:"vol"});view.append(strip,panel,detailTable(data,"展开 K 线数据表"));return view}
+    function renderMinuteView(data,api){const view=document.createElement("div");view.className="market-view";if(!Array.isArray(data)||!data.length){view.append(chartEmpty("接口当前返回空数组；收到分时记录后会绘制价格、均价和成交量。"));view.append(displayTable(data));return view}const rows=data.slice().sort((a,b)=>((a.hour||0)*60+(a.minute||0))-((b.hour||0)*60+(b.minute||0)));const timed=rows.some(row=>Number.isFinite(Number(row.hour))&&Number.isFinite(Number(row.minute)));if(!timed){rows.forEach((row,i)=>row.time=`${String(Math.floor(9+(i/Math.max(rows.length-1,1))*5)).padStart(2,"0")}:${String(Math.floor((i/Math.max(rows.length-1,1)*300)%60)).padStart(2,"0")}`)}const panel=chartPanel(api.path.includes("exhq")?"ExHq 分时 · 价格 / 均价 / 成交量":"分时 · 价格 / 均价 / 成交量",`${rows.length} 个时间点${timed?` · ${rows[0].hour}:${String(rows[0].minute).padStart(2,"0")} — ${rows.at(-1).hour}:${String(rows.at(-1).minute).padStart(2,"0")}`:""}`);addSeriesChart(panel,rows,{kind:"line",volumeKey:api.path.includes("exhq")?"volume":"vol",averageKey:"avg_price"});view.append(panel,detailTable(data,"展开分时数据表"));return view}
+    function renderQuoteView(data){const view=document.createElement("div");view.className="market-view";const quotes=Array.isArray(data)?data:(data&&typeof data==="object"?[data]:[]);if(!quotes.length){view.append(chartEmpty("接口没有返回报价记录。确认市场、证券代码及行情节点后重试。"));view.append(displayTable(data));return view}quotes.forEach(quote=>{const strip=document.createElement("div");strip.className="quote-strip";const last=Number(quote.price),prev=Number(quote.last_close??quote.pre_close),delta=last-prev,pct=prev?delta/prev*100:0;const values=[[quote.code||"证券",quote.name||`市场 ${quote.market??"—"}`],["最新价",nice(quote.price)],["涨跌 / 幅",`${Number.isFinite(delta)?(delta>0?"+":"")+nice(delta):"—"} / ${Number.isFinite(pct)?(pct>0?"+":"")+nice(pct)+"%":"—"}`],["今开 / 昨收",`${nice(quote.open)} / ${nice(quote.last_close??quote.pre_close)}`],["最高 / 最低",`${nice(quote.high)} / ${nice(quote.low)}`],["成交量 / 成交额",`${nice(quote.vol??quote.zongliang,0)} / ${nice(quote.amount)}`]];values.forEach(([label,value],i)=>{const card=document.createElement("div");card.className="quote-card";const l=document.createElement("div");l.className="quote-label";l.textContent=label;const v=document.createElement("div");v.className="quote-value"+(i===1||i===2?(delta>0?" up":(delta<0?" down":"")):"");v.textContent=value;card.append(l,v);if(i===0){const sub=document.createElement("div");sub.className="quote-sub";sub.textContent=`${quote.datetime?`时间 ${quote.datetime}`:`代码 ${quote.code||"—"}`} · ${quote.market===0?"深圳":"上海/ExHq"}`;card.append(sub)}strip.append(card)});view.append(strip);
+        if([1,2,3,4,5].some(n=>quote[`bid${n}`]!==undefined||quote[`ask${n}`]!==undefined)){const books=document.createElement("div");books.className="book-grid";for(const side of ["bid","ask"]){const book=document.createElement("section");book.className=`book-side book-${side}`;const h=document.createElement("h3");h.textContent=side==="bid"?"买盘 · Bid":"卖盘 · Ask";book.append(h);for(let n=1;n<=5;n++){const row=document.createElement("div");row.className="book-row";const level=document.createElement("span");level.textContent=`${n}档`;const price=document.createElement("span");price.className="book-price";price.textContent=nice(quote[`${side}${n}`]);const volume=document.createElement("span");volume.textContent=nice(quote[`${side}_vol${n}`],0);row.append(level,price,volume);book.append(row)}books.append(book)}view.append(books)}});view.append(detailTable(data,"展开完整报价字段"));return view}
+    function renderTape(data,api){const view=document.createElement("div");view.className="market-view";if(!Array.isArray(data)||!data.length){view.append(chartEmpty("当前没有逐笔记录。"));view.append(displayTable(data));return view}const rows=data.slice().reverse().map(row=>({...row,close:row.price,open:row.price,high:row.price,low:row.price}));const panel=chartPanel("逐笔成交 · 价格与成交量",`${data.length} 笔 · 最新成交在表格顶部`);addSeriesChart(panel,rows,{kind:"line",volumeKey:"vol"});view.append(panel,detailTable(data,"展开逐笔成交明细"));return view}
+    function renderResult(data,api){const path=api.path;if(/\/(klines|bars|kdata)(\/|$)/.test(path))return renderKlineView(data,api);if(/\/minute$/.test(path)||path.includes("/minute?"))return renderMinuteView(data,api);if(/\/snapshots$/.test(path)||/\/exhq\/quote$/.test(path))return renderQuoteView(data);if(path.includes("transactions"))return renderTape(data,api);return displayTable(data)}
+    form.addEventListener("submit",async event=>{event.preventDefault();const params=new URLSearchParams();fieldsEl.querySelectorAll("[data-key]").forEach(input=>{if(input.value.trim())params.set(input.dataset.key,input.value.trim())});const url=activeApi.path+(params.size?`?${params}`:"");routeEl.textContent=url;output.replaceChildren();const waiting=document.createElement("p");waiting.className="summary";waiting.innerHTML='<i class="spinner"></i>正在请求接口';output.append(waiting);const send=document.querySelector("#send");send.disabled=true;const started=performance.now();try{const response=await fetch(url,{headers:{Accept:"application/json, text/plain, application/octet-stream"}}),elapsed=((performance.now()-started)/1000).toFixed(2),type=response.headers.get("content-type")||"未知";let data;if(type.includes("application/octet-stream")){const bytes=new Uint8Array(await response.arrayBuffer());data=`二进制响应 ${bytes.length} 字节\n十六进制预览（最多 2 KiB）：\n${[...bytes.slice(0,2048)].map(byte=>byte.toString(16).padStart(2,"0")).join(" ")}`}else if(type.includes("json")){const text=await response.text();try{data=JSON.parse(text)}catch{data=text}}else data=await response.text();setBadge(document.querySelector("#status"),`HTTP ${response.status}`,response.ok?"good":"bad");setBadge(document.querySelector("#duration"),`耗时 ${elapsed}s`);setBadge(document.querySelector("#contentType"),type);output.replaceChildren();if(!response.ok){const error=document.createElement("div");error.className="error";error.textContent=typeof data==="string"?data:JSON.stringify(data,null,2);output.append(error)}else output.append(renderResult(data,activeApi),rawPanel(data))}catch(error){setBadge(document.querySelector("#status"),"请求失败","bad");setBadge(document.querySelector("#duration"),`耗时 ${((performance.now()-started)/1000).toFixed(2)}s`);setBadge(document.querySelector("#contentType"),"网络错误");const box=document.createElement("div");box.className="error";box.textContent=String(error);output.replaceChildren(box)}finally{send.disabled=false}});
+    document.querySelector("#clear").addEventListener("click",()=>{const empty=document.createElement("div");empty.className="empty";const mark=document.createElement("i");mark.className="empty-mark";const title=document.createElement("strong");title.textContent="请求结果会显示在这里";const note=document.createElement("span");note.textContent="远程接口用于获取行情并填充缓存，本地接口用于核对已落盘数据。";empty.append(mark,title,note);output.replaceChildren(empty);setBadge(document.querySelector("#status"),"尚未请求");setBadge(document.querySelector("#duration"),"耗时 —");setBadge(document.querySelector("#contentType"),"—")});
+    async function checkStatus(){const healthDot=document.querySelector("#healthDot"),dbDot=document.querySelector("#dbDot");try{const response=await fetch("/health");if(!response.ok)throw new Error("HTTP status");healthDot.className="led ok";document.querySelector("#healthText").textContent="正常"}catch{healthDot.className="led err";document.querySelector("#healthText").textContent="不可用"}try{const response=await fetch("/api/storage/status"),data=await response.json();dbDot.className="led "+(data.available?"ok":"err");document.querySelector("#dbText").textContent=data.available?"可用":"未启用"}catch{dbDot.className="led err";document.querySelector("#dbText").textContent="不可用"}}
+    document.querySelector("#refreshStatus").addEventListener("click",checkStatus);checkStatus();
+  </script>
+</body>
+</html>

@@ -14,6 +14,10 @@ cmake --build _build -j
 
 如果没有配置 DuckDB C API，服务仍可构建，但本地存储接口不可用。运行配置见 `config/application.yml`：`server.port` 是 HTTP 端口，`tdx.hosts` 是 HQ TCP 节点（通常端口 `7709`），`exhq.hosts` 是 ExHq 节点（通常端口 `7727`），`database.path` 是 DuckDB 文件路径。远程节点必须由部署者配置为可用节点。
 
+HQ K 线与实时快照接口优先使用 Round2 帧协议（握手 `0x000d`、K 线 `0x052d`、快照 `0x054c`）；旧 pytdx 命令在部分主站会返回空记录。实测节点及可用性见[行情节点清单](TDX_HOST_AVAILABILITY.md)。
+
+服务启动后打开 `http://127.0.0.1:8022/` 或 `/test`，可使用内置数据测试页选择接口、编辑参数、发起请求，并以表格或原始响应查看结果。页面状态栏会显示服务和 DuckDB 状态。
+
 ## 通用约定
 
 | 参数/约定 | 说明 |
@@ -154,5 +158,5 @@ GET /api/exhq/bars?market=42&code=IMCI&category=9&start=0&count=100
 
 - `503`：确认 DuckDB 已启用，或对应 HQ/ExHq 客户端已连接；检查 `config/application.yml` 的节点与端口。
 - 本地接口返回 `[]` 或 `404`：先调用对应远程接口，再查询本地缓存。空结果也可能表示上游无数据。
-- HQ K 线遇到上游短包时，解析器会拒绝不完整记录并返回空数组，避免将损坏数据当成有效行情。
+- HQ K 线遇到上游短包时，解析器会拒绝不完整记录并返回空数组，避免将损坏数据当成有效行情。若返回空数组，可先核对 Round2 节点可用性清单。
 - URL 中的 JSON、中文文件名和特殊字符需要进行百分号编码。可以使用 `curl --get --data-urlencode` 构造查询参数。

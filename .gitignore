@@ -11,6 +11,8 @@
 !AGENTS.md
 !docs/
 !docs/**
+!web/
+!web/**
 !include/
 !include/**
 !src/

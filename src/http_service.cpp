@@ -4,6 +4,8 @@
 #include <httplib/httplib.h>
 #include "json/json.hpp"
 #include <algorithm>
+#include <fstream>
+#include <sstream>
 #include <thread>
 #include <chrono>
 #include <cstdlib>
@@ -57,6 +59,21 @@ void HttpServer::stop() {
 }
 
 void HttpServer::setup_routes() {
+    const auto serve_test_page = [](const httplib::Request&, httplib::Response& res) {
+        for (const auto& path : {std::string("web/index.html"), std::string("../web/index.html")}) {
+            std::ifstream page(path, std::ios::binary);
+            if (!page) continue;
+            std::ostringstream content;
+            content << page.rdbuf();
+            res.set_content(content.str(), "text/html; charset=utf-8");
+            return;
+        }
+        res.status = 404;
+        res.set_content("Test page was not found. Reconfigure and rebuild the project.", "text/plain; charset=utf-8");
+    };
+    server_->Get("/", serve_test_page);
+    server_->Get("/test", serve_test_page);
+
     server_->Get("/api/securities/count", [this](const httplib::Request& req, httplib::Response& res) {
         handle_get_security_count(req, res);
     });

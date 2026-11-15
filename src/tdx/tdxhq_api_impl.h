@@ -25,6 +25,11 @@ namespace cpptdx {
 class TdxHqApiImpl : public TdxHqApi {
     boost::asio::io_context io_service_;
     shared_ptr<tcp::socket> socket_;
+    // Newer TDX HQ servers require round2 framing for bars and snapshots.
+    shared_ptr<tcp::socket> round2_socket_;
+    std::uint32_t round2_msg_id_ = 0;
+    std::string round2_host_;
+    std::string round2_port_;
     std::atomic_bool is_running_;
     std::thread th_;
     std::mutex mutex_;
@@ -59,6 +64,8 @@ private:
         join();
         if(socket_)
             socket_->close();
+        if(round2_socket_)
+            round2_socket_->close();
         
     }
     void join() {
@@ -69,15 +76,20 @@ private:
     void heart_beat_thread() {
         while (is_running_) {
             auto elapsed = std::chrono::high_resolution_clock::now() - last_send_time_;
-            if(std::chrono::duration_cast<std::chrono::seconds>(elapsed).count() >= 10)
+            if(std::chrono::duration_cast<std::chrono::seconds>(elapsed).count() >= 10) {
                 get_security_count(Market::kSH);
-            else
+                send_round2(0x0004, {});
+            } else
                 std::this_thread::sleep_for(std::chrono::milliseconds(500));
         }
     }
     std::vector<char> send(const std::vector<uint8_t>& send_data) { 
         return send((char*)send_data.data(), send_data.size()); 
     }
+    bool connect_round2();
+    bool connect_round2_unlocked();
+    std::vector<char> send_round2_unlocked(std::uint16_t command, const std::vector<char>& body);
+    std::vector<char> send_round2(std::uint16_t command, const std::vector<char>& body);
     std::vector<char> send(const char* send_data, size_t send_len);
 };
 }  // namespace cpptdx
